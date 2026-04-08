@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="results-page-container">
+    <div class="dashboard-header results-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h1 class="section-title"><i class="fas fa-chart-line"></i> Results for: {{ quiz.title }}</h1>
+        <div class="header-actions">
+            <a href="{% url 'teacher_questions_review' quiz.id %}" class="btn btn-primary">
+                <i class="fas fa-list-ol"></i> Review Questions
+            </a>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-secondary back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    {% if results %}
+        <div class="card analysis-card" style="margin-bottom: 30px; padding: 20px;">
+            <div class="card-title-header primary">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4 style="display: inline-block; margin-left: 10px;">Question Error Analysis (Mistake Rate)</h4>
+            </div>
+            <div class="chart-container" style="position: relative; height: 350px; width: 100%;">
+                <canvas id="mistakeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card leaderboard-card" style="padding: 20px;">
+            <div class="card-title-header success" style="margin-bottom: 15px;">
+                <i class="fas fa-trophy"></i>
+                <h4 style="display: inline-block; margin-left: 10px;">Student Leaderboard</h4>
+            </div>
+            <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                        <th style="padding: 10px;">Rank</th>
+                        <th>Student Name</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th>Date Taken</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in sorted_students %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px;">{{ forloop.counter }}</td>
+                        <td><strong>{{ student.student_name }}</strong></td>
+                        <td>{{ student.score }} / {{ student.total_questions }}</td>
+                        <td>
+                            <span style="background-color: {% if student.percentage >= 50 %}#2ecc71{% else %}#e74c3c{% endif %}; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.9em;">
+                                {% if student.percentage >= 50 %}Pass{% else %}Fail{% endif %} ({{ student.percentage }}%)
+                            </span>
+                        </td>
+                        <td>{{ student.date_taken|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card empty-state-card text-center" style="padding: 60px 20px; border: 2px dashed #ddd; border-radius: 10px;">
+            <i class="fas fa-clipboard-check" style="font-size: 3rem; color: #ddd; margin-bottom: 15px; display: block;"></i>
+            <h3>No Results Recorded Yet</h3>
+            <p style="color: #777;">Once students complete this assessment, their analysis will appear here.</p>
+            <a href="{% url 'dispatch_dashboard' %}" class="btn btn-primary">Return to Dashboard</a>
+        </div>
+    {% endif %}
+</div>
+
+{% if results %}
+<script id="chart-labels" type="application/json">{{ chart_labels_json|safe }}</script>
+<script id="chart-data" type="application/json">{{ chart_data_json|safe }}</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('mistakeChart');
+    if (!ctx) return;
+    try {
+        const labels = JSON.parse(document.getElementById('chart-labels').textContent);
+        const data = JSON.parse(document.getElementById('chart-data').textContent);
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Mistake Rate (%)',
+                    data: data,
+                    backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                    borderColor: 'rgba(192, 57, 43, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+    } catch (e) { console.error("Chart Error:", e); }
+});
+</script>
+{% endif %}
+{% endblock %}

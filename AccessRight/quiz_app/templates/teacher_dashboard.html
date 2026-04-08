@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-layout">
+  <aside class="sidebar dashboard-sidebar card">
+    <div class="sidebar-header">
+        <i class="fas fa-chalkboard-teacher"></i>
+        <h3>Teacher Panel</h3>
+    </div>
+    <ul class="nav-list">
+      <li><button class="nav-btn active" data-section="overview"><i class="fas fa-tachometer-alt"></i> Dashboard Overview</button></li>
+      <li><button class="nav-btn" data-section="assignments"><i class="fas fa-tasks"></i> Your Qizzes</button></li>
+
+    </ul>
+
+    <a href="{% url 'create_quiz' %}" class="btn btn-primary nav-action-btn"><i class="fas fa-feather-alt"></i> Build Quiz</a>
+  </aside>
+
+  <main class="main-content dashboard-content">
+
+    <section id="overview" class="dashboard-section card">
+        <h2 class="section-title"><i class="fas fa-graduation-cap"></i> Welcome, {{ user.first_name }} ({{ user.subject }})</h2>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="stat-icon fas fa-clipboard-list"></i>
+                <div class="stat-value">{{ quizzes|length }}</div>
+                <div class="stat-label">Total Quizzes Created</div>
+            </div>
+            <div class="stat-card primary">
+                <i class="stat-icon fas fa-user-graduate"></i>
+                <div class="stat-value">{{ students.count }}</div>
+                <div class="stat-label">Students in Classes</div>
+            </div>
+            <div class="stat-card secondary">
+                <i class="stat-icon fas fa-pencil-alt"></i>
+                <div class="stat-value">{{ pending_reviews }}</div>
+                <div class="stat-label">Pending Student Reviews</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="assignments" class="dashboard-section card" style="display: none;">
+      <h2 class="section-title"><i class="fas fa-tasks"></i> Your Created Quizzes</h2>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Date Created</th>
+            <th>Total Attempts</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for quiz in quizzes %}
+          <tr>
+            <td><strong>{{ quiz.title }}</strong></td>
+            <td>{{ quiz.created_at|date:"M d, Y" }}</td>
+            <td>{{ quiz.result_set.count }} / {{ students.count }}</td>
+            <td>
+              <a href="{% url 'quiz_results_teacher' quiz.id %}" class="table-link btn-sm btn-action">View Performance</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="empty-data">You have not created any quizzes yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section id="create" class="dashboard-section card" style="display: none;">
+      <h2 class="section-title"><i class="fas fa-file-signature"></i> Create New Quiz</h2>
+      <p class="description-text">Use the tool below to start building a new assessment for your students.</p>
+      <a href="{% url 'create_quiz' %}" class="btn btn-primary btn-lg create-btn">
+          <i class="fas fa-plus-square"></i> Start Building Your Quiz
+      </a>
+
+      <div class="tip-box">
+          <i class="fas fa-lightbulb"></i>
+          <strong>Tip:</strong> Ensure your quiz has a clear title and assign it to the correct subject matter.
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  // Navigation Logic (Refined to match admin_dashboard logic)
+  function showSection(id, btn) {
+    // Hide all sections
+    const sections = document.querySelectorAll('.dashboard-section');
+    sections.forEach(sec => sec.style.display = 'none');
+
+    // Show selected section
+    document.getElementById(id).style.display = 'block';
+
+    // Update active button
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(b => b.classList.remove('active'));
+
+    if (btn) {
+        btn.classList.add('active');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initial display: show the "overview" section
+    showSection('overview');
+
+    // Attach click listeners to sidebar buttons
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            showSection(btn.dataset.section, btn);
+        });
+    });
+  });
+</script>
+{% endblock %}

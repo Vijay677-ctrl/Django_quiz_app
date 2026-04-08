@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="quiz-page-layout" style="display: flex; gap: 20px; padding: 20px;">
+    <aside class="quiz-info-panel" style="flex: 1;">
+        <div class="card p-3 mb-3">
+            <h3>{{ quiz.title }}</h3>
+            <p>Subject: {{ quiz.subject }}</p>
+        </div>
+        <div class="card p-3 mb-3 text-center">
+            <h2 id="quiz-timer" style="font-size: 2.5em;">--:--</h2>
+            <p>Remaining Time</p>
+        </div>
+        <div class="card p-3">
+            <p>Question {{ question_number }} of {{ total_questions }}</p>
+            <div style="background: #eee; height: 10px; border-radius: 5px;">
+                <div style="background: #007bff; height: 100%; width: {% widthratio question_number total_questions 100 %}%; border-radius: 5px;"></div>
+            </div>
+        </div>
+    </aside>
+
+    <main style="flex: 3;">
+        <form method="post" action="{% url 'attempt_next_question' quiz.id question.id %}">
+            {% csrf_token %}
+            <div class="card p-4">
+                <h4>{{ question.text }}</h4>
+                <div class="options-grid mt-4">
+                    {% for i in "1234"|make_list %}
+                    <label style="display: block; padding: 15px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 8px; cursor: pointer;">
+                        <input type="radio" name="{{ question.id }}" value="{{ i }}" required>
+                        {{ i }}. {% if i == "1" %}{{ question.option_1 }}{% elif i == "2" %}{{ question.option_2 }}{% elif i == "3" %}{{ question.option_3 }}{% else %}{{ question.option_4 }}{% endif %}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mt-4 text-right">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    {% if question_number == total_questions %}Submit Quiz{% else %}Next Question <i class="fas fa-arrow-right"></i>{% endif %}
+                </button>
+            </div>
+        </form>
+    </main>
+</div>
+
+<script>
+    // Timer Logic using the value from the view
+    let timeRemaining = {{ time_remaining_seconds|floatformat:0 }};
+    const timerDisplay = document.getElementById('quiz-timer');
+
+    const countdown = setInterval(() => {
+        if (timeRemaining <= 0) {
+            clearInterval(countdown);
+            document.querySelector('form').submit();
+        } else {
+            timeRemaining--;
+            let mins = Math.floor(timeRemaining / 60);
+            let secs = timeRemaining % 60;
+            timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+    }, 1000);
+</script>
+{% endblock %}

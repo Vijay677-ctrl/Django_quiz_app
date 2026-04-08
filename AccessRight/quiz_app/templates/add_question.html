@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+  /* Container layout tweaks (optional) */
+  .form-page-layout {
+    padding: 20px;
+  }
+  .add-question-card {
+    width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* Base inputs */
+  .question-form-container input[type="text"],
+  .question-form-container input[type="number"],
+  .question-form-container select,
+  .question-form-container textarea {
+      width: 100%;
+      padding: 16px 18px !important;
+      border: 1px solid #ddd;
+      border-radius: var(--input-border-radius, 8px) !important;
+      font-size: 1.05em !important;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      background-color: white;
+      font-family: var(--font-family, system-ui, -apple-system, Segoe UI, Roboto);
+      display: block;
+      box-sizing: border-box;
+  }
+
+  /* Question textarea (big) */
+  .question-form-container textarea#id_text {
+      min-height: 180px !important;
+      line-height: 1.6;
+      resize: vertical; /* allow user to resize */
+  }
+
+  /* Option textareas (medium) */
+  .question-form-container .option-textarea {
+      min-height: 90px !important;
+      line-height: 1.5;
+      resize: vertical;
+  }
+
+  /* Correct option dropdown */
+  .correct-option-group select#id_correct_option {
+      max-width: 500px;
+      height: 52px !important;
+      font-weight: 700;
+      margin-top: 10px;
+  }
+
+  /* Grid for options */
+  .form-grid.options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+  }
+
+  .form-group.full-width {
+      grid-column: 1 / -1;
+  }
+
+  /* Buttons */
+  .question-actions {
+      display: flex;
+      flex-direction: row;
+      gap: 15px;
+      margin-top: 30px;
+  }
+  .question-actions .action-btn {
+      flex: 1;
+      padding: 12px 20px !important;
+      font-size: 0.95em !important;
+      height: auto !important;
+  }
+
+  /* Focus states */
+  .question-form-container input:focus,
+  .question-form-container textarea:focus,
+  .question-form-container select:focus {
+      border-color: var(--secondary-color, #2196f3);
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.12);
+      outline: none;
+  }
+</style>
+
+<div class="form-page-layout">
+  <div class="card add-question-card">
+
+    <div class="header-status-section text-center">
+      <h2 class="section-title"><i class="fas fa-question-circle"></i> Add Questions</h2>
+      <p class="quiz-context">Current Quiz: <strong>{{ quiz.title }}</strong></p>
+      <p class="question-count-status">You are adding Question {{ next_number }}</p>
+    </div>
+
+    <form method="post" class="question-form-container">
+      {% csrf_token %}
+
+      <!-- Question Text -->
+      <div class="form-group full-width">
+        <label for="id_text" class="options-heading">Question Text:</label>
+        <!-- Explicit textarea bound to form field name/id -->
+        <textarea id="id_text" name="text" placeholder="Type your full question here...">{{ form.text.value|default_if_none:""  }}</textarea>
+        <!-- If you're not using {{ form.text.value }}, you can leave it empty -->
+      </div>
+
+      <h3 class="options-heading">Answer Options</h3>
+
+      <div class="form-grid options-grid">
+        <!-- Option 1 -->
+        <div class="form-group option-group">
+          <label for="id_option_1">1. Option Text:</label>
+          <textarea id="id_option_1" name="option_1" class="option-textarea" placeholder="Enter option 1...">{{ form.option_1.value|default_if_none:""  }}</textarea>
+        </div>
+
+        <!-- Option 2 -->
+        <div class="form-group option-group">
+          <label for="id_option_2">2. Option Text:</label>
+          <textarea id="id_option_2" name="option_2" class="option-textarea" placeholder="Enter option 2...">{{ form.option_2.value|default_if_none:""  }}</textarea>
+        </div>
+
+        <!-- Option 3 -->
+        <div class="form-group option-group">
+          <label for="id_option_3">3. Option Text:</label>
+          <textarea id="id_option_3" name="option_3" class="option-textarea" placeholder="Enter option 3...">{{ form.option_3.value|default_if_none:""  }}</textarea>
+        </div>
+
+        <!-- Option 4 -->
+        <div class="form-group option-group">
+          <label for="id_option_4">4. Option Text:</label>
+          <textarea id="id_option_4" name="option_4" class="option-textarea" placeholder="Enter option 4...">{{ form.option_4.value|default_if_none:""  }}</textarea>
+        </div>
+      </div>
+
+      <!-- Correct option dropdown -->
+      <div class="form-group correct-option-group full-width">
+        <label for="id_correct_option"><i class="fas fa-key"></i> Correct Option (Select 1, 2, 3, or 4):</label>
+        <select id="id_correct_option" name="correct_option">
+          <option value="" {% if not form.correct_option.value %}selected{% endif %}>Select…</option>
+          <option value="1" {% if form.correct_option.value|stringformat:"s" == "1" %}selected{% endif %}>1</option>
+          <option value="2" {% if form.correct_option.value|stringformat:"s" == "2" %}selected{% endif %}>2</option>
+          <option value="3" {% if form.correct_option.value|stringformat:"s" == "3" %}selected{% endif %}>3</option>
+          <option value="4" {% if form.correct_option.value|stringformat:"s" == "4" %}selected{% endif %}>4</option>
+        </select>
+        <p class="help-text">Select the number corresponding to the correct answer above.</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions question-actions">
+        <button type="submit" name="add_another" class="btn btn-primary action-btn save-another">
+          <i class="fas fa-save"></i> Save & Add Another Question
+        </button>
+        <button type="submit" class="btn btn-success action-btn finish-quiz">
+          <i class="fas fa-check"></i> Finish & Save Quiz
+        </button>
+      </div>
+        <br/>
+
+      <a href="{% url 'teacher_dashboard' %}" class="btn-text-link form-cancel-link">Cancel and Return to Dashboard</a>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

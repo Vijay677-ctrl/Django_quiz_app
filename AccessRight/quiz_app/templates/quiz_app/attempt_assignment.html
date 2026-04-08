@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="quiz-page-layout single-question-mode">
+
+    <aside class="quiz-info-panel">
+        <div class="card quiz-header-card">
+            <h1 class="quiz-title">{{ quiz.name|default:quiz.title }}</h1>
+        </div>
+
+        <div class="card timer-card">
+            <i class="fas fa-clock timer-icon"></i>
+            <div class="timer-display">
+                <span id="quiz-timer">--:--</span>
+            </div>
+            <p class="timer-label">Time Remaining</p>
+        </div>
+
+        <div class="card progress-card">
+            <i class="fas fa-tasks progress-icon"></i>
+            <p class="progress-label">Question</p>
+            <p class="progress-count">
+                <span id="current-q">{{ question_number }}</span> of {{ total_questions }}
+            </p>
+        </div>
+    </aside>
+
+    <main class="quiz-form-content">
+        <form id="quiz-form" method="post" action="{% url 'attempt_next_question' quiz.id question.id %}">
+            {% csrf_token %}
+
+            <div class="question-block card">
+
+                <div class="question-header">
+                    <span class="question-number">Question {{ question_number }}</span>
+                </div>
+
+                <p class="question-text">{{ question.text }}</p>
+
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="{{ question.id }}" value="1" required>
+                        <span class="option-content">A. {{ question.option_1 }}</span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="{{ question.id }}" value="2">
+                        <span class="option-content">B. {{ question.option_2 }}</span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="{{ question.id }}" value="3">
+                        <span class="option-content">C. {{ question.option_3 }}</span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="{{ question.id }}" value="4">
+                        <span class="option-content">D. {{ question.option_4 }}</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="submit-footer fixed-bottom-action">
+                <button type="submit" class="btn btn-primary btn-lg submit-quiz-btn">
+                    {% if question_number == total_questions %}
+                        <i class="fas fa-check-circle"></i> Finish & Submit
+                    {% else %}
+                        <i class="fas fa-arrow-right"></i> Next Question
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </main>
+</div>
+
+<script>
+    let totalSeconds = Math.round({{ time_remaining_seconds }});
+    let timerElement = document.getElementById('quiz-timer');
+    const timerCard = document.querySelector('.timer-card');
+    const submitUrl = "{% url 'submit_assignment' quiz.id %}";
+
+    function updateDisplay(total) {
+        let minutes = Math.floor(total / 60);
+        let seconds = total % 60;
+        let displayTime =
+            (minutes < 10 ? "0" + minutes : minutes) + ":" +
+            (seconds < 10 ? "0" + seconds : seconds);
+
+        timerElement.textContent = displayTime;
+
+        // Visual feedback on timer card/icon
+        timerCard.classList.remove('timer-low', 'timer-warning', 'timer-normal');
+
+        if (total <= 60) {
+            timerCard.classList.add('timer-low'); // Red color
+        } else if (total <= 300) {
+            timerCard.classList.add('timer-warning'); // Orange color
+        } else {
+            timerCard.classList.add('timer-normal'); // Default color
+        }
+    }
+
+    function startTimer() {
+        let timer = setInterval(function() {
+            if (totalSeconds <= 0) {
+                clearInterval(timer);
+                alert("Time is up! Submitting your quiz automatically.");
+                document.getElementById('quiz-form').action = submitUrl;
+                document.getElementById('quiz-form').submit();
+            } else {
+                totalSeconds--;
+                updateDisplay(totalSeconds);
+            }
+        }, 1000);
+    }
+
+    updateDisplay(totalSeconds);
+    window.onload = startTimer;
+</script>
+{% endblock content %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="score-container">
+    <div class="card shadow-lg p-5 text-center" style="max-width: 600px; margin: 40px auto; border-radius: 15px;">
+        <h1 class="card-title mb-4" style="color: #007bff;">Quiz Completed!</h1>
+        <h3 class="mb-5">{{ result.quiz.title }}</h3>
+
+        <div class="score-display mb-4 p-4 rounded" style="background-color: #f8f9fa;">
+            <p class="h2 mb-2" style="color: #333;">
+                Your Score: <strong>{{ result.score }} / {{ result.total_questions }}</strong>
+            </p>
+            <p class="h4" style="color: #555;">
+                Percentage: {{ percentage }}%
+            </p>
+            <hr>
+            <h2 style="color: {% if percentage > 50 %}#2ecc71{% else %}#e74c3c{% endif %}; font-weight: bold; margin-top: 15px;">
+                Status: {% if percentage >= 50 %}PASS{% else %}FAIL{% endif %}
+            </h2>
+            <p class="lead mt-3" style="color: #6c757d;">
+                Time Taken: <strong>{{ time_taken }}</strong>
+            </p>
+        </div>
+
+        <div class="d-grid gap-2">
+            <a href="{% url 'student_quiz_review' result.id %}" class="btn btn-secondary" style="width: 100%; display: block; margin-bottom: 10px; padding: 12px; background: #6c757d; color: white; border-radius: 5px; text-decoration: none;">
+                Review Answers
+            </a>
+            <a href="{% url 'student_dashboard' %}" class="btn btn-primary" style="width: 100%; display: block; padding: 12px; background: #007bff; color: white; border-radius: 5px; text-decoration: none;">
+                Return to Student Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

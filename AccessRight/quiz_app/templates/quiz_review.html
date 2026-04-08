@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .review-container { max-width: 900px; margin: 30px auto; padding: 20px; }
+    .q-card { margin-bottom: 25px; border-radius: 10px; border-left: 8px solid #ccc; }
+    .q-card.correct { border-left-color: #2ecc71; }
+    .q-card.incorrect { border-left-color: #e74c3c; }
+
+    .option-item {
+        padding: 12px;
+        margin: 8px 0;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .correct-box { background-color: #d4edda; border-color: #c3e6cb; color: #155724; font-weight: bold; }
+    .incorrect-box { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+    .feedback-icon { font-size: 1.2em; }
+</style>
+
+<div class="review-container">
+    <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2><i class="fas fa-search"></i> Review: {{ quiz.title }}</h2>
+        <div class="header-actions">
+    {% if percentage < 50 and quiz.last_date >= now %}
+        <a href="{% url 'attempt_assignment' quiz.id %}" class="btn btn-warning">
+            <i class="fas fa-redo"></i> Retake Quiz
+        </a>
+    {% endif %}
+        <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+    <div class="card p-4 text-center" style="margin-bottom: 30px; border-top: 5px solid {% if percentage > 50 %}#2ecc71{% else %}#e74c3c{% endif %};">
+        <h4>Final Score: {{ result.score }} / {{ result.total_questions }} ({{ percentage }}%)</h4>
+        <h2 style="color: {% if percentage > 50 %}#2ecc71{% else %}#e74c3c{% endif %};">
+            Verdict: {% if percentage > 50 %}PASS{% else %}FAIL{% endif %}
+        </h2>
+    </div>
+
+    {% for item in review_data %}
+    <div class="card q-card p-4 {% if item.is_correct %}correct{% else %}incorrect{% endif %}">
+        <div style="display: flex; justify-content: space-between;">
+            <h5>Question {{ forloop.counter }}</h5>
+            <span>
+                {% if item.is_correct %}
+                    <b style="color: #2ecc71;"><i class="fas fa-check"></i> Correct</b>
+                {% else %}
+                    <b style="color: #e74c3c;"><i class="fas fa-times"></i> Incorrect</b>
+                {% endif %}
+            </span>
+        </div>
+        <p class="h5 my-3">{{ item.question.text }}</p>
+
+        <div class="options-list">
+            <div class="option-item
+                {% if item.correct_option == '1' %}correct-box{% elif item.selected_option == '1' %}incorrect-box{% endif %}">
+                <span>1. {{ item.question.option_1 }}</span>
+                {% if item.selected_option == '1' %} <small>(Your Answer)</small> {% endif %}
+                {% if item.correct_option == '1' %} <i class="fas fa-check-circle feedback-icon"></i> {% endif %}
+            </div>
+
+            <div class="option-item
+                {% if item.correct_option == '2' %}correct-box{% elif item.selected_option == '2' %}incorrect-box{% endif %}">
+                <span>2. {{ item.question.option_2 }}</span>
+                {% if item.selected_option == '2' %} <small>(Your Answer)</small> {% endif %}
+                {% if item.correct_option == '2' %} <i class="fas fa-check-circle feedback-icon"></i> {% endif %}
+            </div>
+
+            <div class="option-item
+                {% if item.correct_option == '3' %}correct-box{% elif item.selected_option == '3' %}incorrect-box{% endif %}">
+                <span>3. {{ item.question.option_3 }}</span>
+                {% if item.selected_option == '3' %} <small>(Your Answer)</small> {% endif %}
+                {% if item.correct_option == '3' %} <i class="fas fa-check-circle feedback-icon"></i> {% endif %}
+            </div>
+
+            <div class="option-item
+                {% if item.correct_option == '4' %}correct-box{% elif item.selected_option == '4' %}incorrect-box{% endif %}">
+                <span>4. {{ item.question.option_4 }}</span>
+                {% if item.selected_option == '4' %} <small>(Your Answer)</small> {% endif %}
+                {% if item.correct_option == '4' %} <i class="fas fa-check-circle feedback-icon"></i> {% endif %}
+            </div>
+        </div>
+
+        {% if item.question.explanation %}
+        <div class="mt-3 p-3" style="background: #eef2f7; border-radius: 5px;">
+            <strong><i class="far fa-lightbulb"></i> Explanation:</strong>
+            <p class="mb-0">{{ item.question.explanation }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

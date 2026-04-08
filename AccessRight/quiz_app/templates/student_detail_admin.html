@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="detail-page-container">
+
+    <div class="dashboard-header detail-header">
+        <h2 class="section-title"><i class="fas fa-user-graduate"></i> Student Profile: <span class="profile-name">{{ student.first_name }} {{ student.last_name }}</span></h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card detail-info-card">
+        <h3 class="data-title"><i class="fas fa-id-card"></i> Account Details</h3>
+        <div class="info-grid">
+            <p><strong>Username:</strong> <span>{{ student.username }}</span></p>
+            <p><strong>Email:</strong> <span>{{ student.email }}</span></p>
+            <p><strong>Role:</strong> <span class="role-badge">{{ student.get_role_display }}</span></p>
+        </div>
+    </div>
+
+    <div class="card chart-performance-card">
+        <h3 class="data-title chart-title"><i class="fas fa-chart-bar"></i> Subject Performance (Average %)</h3>
+        <div class="chart-container-large">
+            <canvas id="studentSubjectChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card quiz-history-card">
+        <h3 class="data-title"><i class="fas fa-history"></i> Quiz Performance History</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Quiz Title</th>
+                    <th>Subject</th>
+                    <th>Score</th>
+                    <th>Date Taken</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td><strong>{{ result.quiz.title }}</strong></td>
+                    <td>{{ result.quiz.subject }}</td>
+                    <td>
+                        {% with percentage=result.score|floatformat:"0"|div:result.total_questions|mul:100|default:0 %}
+                            {% if percentage >= 50 %}
+                                <span class="score-badge score-pass">{{ result.score }} / {{ result.total_questions }}</span>
+                            {% else %}
+                                <span class="score-badge score-fail">{{ result.score }} / {{ result.total_questions }}</span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td class="date-taken">{{ result.date_taken|date:"M d, Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="empty-data">No quizzes taken by this student yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script id="student-results-data" type="application/json">
+[
+    {% for result in results %}
+    {
+        "subject": "{{ result.quiz.subject|escapejs }}",
+        "score": {{ result.score }},
+        "total": {{ result.total_questions }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Get raw data from the hidden JSON script
+    const dataElement = document.getElementById('student-results-data');
+    if (!dataElement) return;
+    const rawData = JSON.parse(dataElement.textContent);
+
+    // 2. Process Data: Group by Subject and Calculate Average Percentage
+    const subjectStats = {};
+
+    rawData.forEach(item => {
+        if (!subjectStats[item.subject]) {
+            subjectStats[item.subject] = { totalPercentage: 0, count: 0 };
+        }
+        // Calculate percentage for this specific quiz attempt
+        let percentage = (item.total > 0) ? (item.score / item.total) * 100 : 0;
+
+        subjectStats[item.subject].totalPercentage += percentage;
+        subjectStats[item.subject].count += 1;
+    });
+
+    // Prepare arrays for Chart.js
+    const labels = Object.keys(subjectStats);
+    const dataPoints = labels.map(subject => {
+        return (subjectStats[subject].totalPercentage / subjectStats[subject].count).toFixed(1);
+    });
+
+    // 3. Render Chart
+    const ctx = document.getElementById('studentSubjectChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Score (%)',
+                data: dataPoints,
+                backgroundColor: 'rgba(33, 150, 243, 0.7)', /* Secondary color blue */
+                borderColor: 'rgba(33, 150, 243, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Average Percentage (%)'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: 'Student Performance by Subject'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

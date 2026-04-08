@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="detail-page-container">
+
+    <div class="dashboard-header detail-header">
+        <h2 class="section-title"><i class="fas fa-chalkboard-teacher"></i> Teacher Profile: <span class="profile-name teacher-name">{{ teacher.first_name }} {{ teacher.last_name }}</span></h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card detail-info-card teacher-info-card">
+        <h3 class="data-title"><i class="fas fa-user-circle"></i> Teacher Details</h3>
+        <div class="info-grid">
+            <p><strong>Username:</strong> <span>{{ teacher.username }}</span></p>
+            <p><strong>Email:</strong> <span>{{ teacher.email }}</span></p>
+            <p><strong>Subject:</strong> <span class="subject-badge">{{ teacher.subject }}</span></p>
+        </div>
+    </div>
+
+    <div class="card assignment-history-card">
+        <h3 class="data-title"><i class="fas fa-clipboard-list"></i> Quizzes Created by Teacher</h3>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Subject</th>
+                    <th>Date Created</th>
+                    <th>Questions Count</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quiz in quizzes %}
+                <tr>
+                    <td><strong>{{ quiz.title }}</strong></td>
+                    <td>{{ quiz.subject }}</td>
+                    <td>{{ quiz.created_at|date:"M d, Y" }}</td>
+                    <td>{{ quiz.questions.count }}</td>
+                    <td>
+                        <a href="{% url 'quiz_results_teacher' quiz.id %}" class="table-link">View Results</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="empty-data">No Quizzes created by this teacher yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

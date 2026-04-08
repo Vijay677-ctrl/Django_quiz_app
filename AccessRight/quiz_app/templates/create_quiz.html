@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="form-page-layout">
+    <div class="card quiz-create-card">
+        <h2 class="section-title text-center"><i class="fas fa-edit"></i> Create New Quiz</h2>
+        <p class="description-text text-center">Define the core parameters for your quiz.</p>
+
+        <form method="post" class="quiz-form-container">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_title">Quiz Title:</label>
+                    {{ form.title }}
+                    <span class="text-danger">{{ form.title.errors }}</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_subject">Subject:</label>
+                    <input type="text" value="{{ teacher_subject }}" class="form-control" readonly style="background-color: #f4f7f6; cursor: not-allowed;">
+                    <input type="hidden" name="subject" value="{{ teacher_subject }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="id_topic">Topic:</label>
+                    {{ form.topic }}
+                    <span class="text-danger">{{ form.topic.errors }}</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_quiz_time">Quiz Time (minutes):</label>
+                    {{ form.quiz_time }}
+                    <div class="error-msg" style="color: red; font-size: 0.8rem;">
+                        {{ form.quiz_time.errors }}
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="id_last_date">Last Date to Submit:</label>
+                    {{ form.last_date }}
+                    <div class="error-msg" style="color: red; font-size: 0.8rem;">
+                        {{ form.last_date.errors }}
+                    </div>
+                </div>
+            </div>
+
+            {{ form.non_field_errors }}
+            {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg action-btn">
+                    Next: Add Questions <i class="fas fa-arrow-right"></i>
+                </button>
+                <a href="{% url 'teacher_dashboard' %}" class="btn-text-link">Cancel and Return to Dashboard</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

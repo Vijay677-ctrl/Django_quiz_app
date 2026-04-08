@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AssessRight</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <span>🧠 AssessRight</span>
+        </div>
+        <nav class="nav-links">
+            {% if user.is_authenticated %}
+                <div class="user-info">
+                    Welcome, {{ user.username }} ({{ user.get_role_display }})
+                </div>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-logout">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login_selection' %}" class="btn btn-primary">Refresh</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="content-wrapper">
+        <div class="container">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer">
+        AssessRight Quiz Portal
+    </footer>
+</body>
+</html>
