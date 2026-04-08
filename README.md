@@ -3,7 +3,7 @@
 **AssessRight** is a robust, data-driven digital ecosystem designed to modernize the academic assessment lifecycle. Built with the Django framework, it provides a secure and scalable platform for Students, Teachers, Parents, and Principals to manage and track academic performance in real-time.
 
 ## 🚀 Key Features
-* **Role-Based Access Control (RBAC)**: Distinct dashboards for four user roles ensuring data security and privacy.
+* **Role-Based Access Control (RBAC)**: Distinct dashboards for four user roles(principal, teacher, student, parent) ensuring data security and privacy.
 * **Live Examination Engine**: Real-time session-based timers and one-by-one question routing to ensure exam integrity.
 * **Automated Scoring**: Instant grading and feedback with database-driven rounding logic for precise reporting.
 * **Advanced Analytics**: Interactive visualizations using **Chart.js** to track mistake rates and subject performance.
